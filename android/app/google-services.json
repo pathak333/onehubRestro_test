@@ -1,0 +1,83 @@
+{
+  "project_info": {
+    "project_number": "973155372103",
+    "firebase_url": "https://km-production-a9806-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "km-production-a9806",
+    "storage_bucket": "km-production-a9806.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:973155372103:android:a8a2c19968afd3b0d47562",
+        "android_client_info": {
+          "package_name": "com.bulbandkey.onehubrestro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "973155372103-pm3mr5mmc9eq0mo5pbn4ucr0i6bpr503.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDsqi4ZxbvaDndhUB9NnOZF6HUsekObB4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "973155372103-pm3mr5mmc9eq0mo5pbn4ucr0i6bpr503.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "973155372103-qst3268p00pjisa2o5em0qffo4bdmrgd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.threekm.seller"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:973155372103:android:889628c8928ae6ced47562",
+        "android_client_info": {
+          "package_name": "com.bulbandkey.threekmseller"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "973155372103-pm3mr5mmc9eq0mo5pbn4ucr0i6bpr503.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDsqi4ZxbvaDndhUB9NnOZF6HUsekObB4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "973155372103-pm3mr5mmc9eq0mo5pbn4ucr0i6bpr503.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "973155372103-qst3268p00pjisa2o5em0qffo4bdmrgd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.threekm.seller"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
