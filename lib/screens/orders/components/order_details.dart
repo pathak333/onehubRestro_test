@@ -103,7 +103,8 @@ class OrderDetails extends StatelessWidget {
                   style:
                       AppTextStyle.getLatoSemibold().copyWith(color: textGrey)),
               SizedBox(width: size.width * 0.02),
-              Text('₹ ${order.total - 10}',
+              Text(
+                  '₹ ${order.subTotal + order.shippingAmount + order.tax + 10}',
                   style: AppTextStyle.getPoppinsSemibold()
                       .copyWith(color: textGrey)),
               SizedBox(width: size.width * 0.02),

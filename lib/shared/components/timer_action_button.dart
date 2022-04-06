@@ -41,7 +41,7 @@ class _TimerActionButtonState extends State<TimerActionButton>
   @override
   void initState() {
     // _timer = Timer.
-    log('TTTTTTTTTTTTTTTTTTTTTTTT');
+ 
     _secondsRemaining =
         (widget.secondsRemaining > 0) ? widget.secondsRemaining : 0;
     Duration oneSec = Duration(seconds: 1);

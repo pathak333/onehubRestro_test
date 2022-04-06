@@ -8,18 +8,41 @@ import 'package:onehubrestro/controllers/orders/orders_controller.dart';
 import 'package:onehubrestro/models/orders.dart';
 import 'package:onehubrestro/screens/home/components/icons.dart';
 import 'package:onehubrestro/screens/orders/order_detail_screen.dart';
+import 'package:onehubrestro/shared/components/countdown.dart';
+import 'package:onehubrestro/shared/components/timer_action_button.dart';
 import 'package:onehubrestro/utilities/colors.dart';
 import 'package:onehubrestro/utilities/transitions/slidetransition.dart';
 import 'package:onehubrestro/shared/components/countdown_timer.dart';
 import 'package:onehubrestro/controllers/orders/orders_realtime_controller.dart';
 import 'package:onehubrestro/controllers/restautant/restaurant_controller.dart';
 
-class OrderCard extends StatelessWidget {
+class OrderCard extends StatefulWidget {
   OrderCard({Key key, this.orderId}) : super(key: key);
 
   final int orderId;
 
+  @override
+  State<OrderCard> createState() => _OrderCardState();
+}
+
+class _OrderCardState extends State<OrderCard> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    WidgetsBinding.instance.addObserver(this);
+    super.initState();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!mounted) return;
+    setState(() {
+      log('MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM');
+    });
+    log('MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM');
+  }
+
   RestaurantController restaurantController = Get.find<RestaurantController>();
+
   RealTimeOrdersController realTimeOrdersController =
       Get.find<RealTimeOrdersController>();
 
@@ -55,22 +78,23 @@ class OrderCard extends StatelessWidget {
     log('oooooooooooooooooooooooooooooooooooooo');
 
     return StreamBuilder(
-        key: Key(orderId.toString()),
+        key: Key(widget.orderId.toString()),
         stream: realTimeOrdersController.getOrderById(
             restaurantId: restaurantController.restaurant.value.restaurantId,
-            orderId: orderId),
+            orderId: widget.orderId),
         builder: (context, snapshot) {
           if (snapshot.data != null) {
             Order order = snapshot.data;
             var totalSeconds = order.leadTime * 60;
+            //var totalSeconds = order.pickupTime;
             var remainingSeconds = (order.pickupTime != null)
                 ? order.pickupTime.seconds.difference(DateTime.now()).inSeconds
                 : 0;
 
             if (order.orderStatus == OrderStatus.preparing) {
               if (remainingSeconds <= 0) {
-                if (orderController.timers[orderId] == null) {
-                  orderController.timers[orderId] =
+                if (orderController.timers[widget.orderId] == null) {
+                  orderController.timers[widget.orderId] =
                       Timer.periodic(Duration(seconds: 10), (timer) {
                     AudioCache player =
                         new AudioCache(prefix: 'lib/assets/sounds/');
@@ -80,11 +104,11 @@ class OrderCard extends StatelessWidget {
                   });
                 }
               } else {
-                if (orderController.startTimers[orderId] == null) {
-                  orderController.startTimers[orderId] =
+                if (orderController.startTimers[widget.orderId] == null) {
+                  orderController.startTimers[widget.orderId] =
                       Timer(Duration(seconds: remainingSeconds), () {
-                    if (orderController.timers[orderId] == null) {
-                      orderController.timers[orderId] =
+                    if (orderController.timers[widget.orderId] == null) {
+                      orderController.timers[widget.orderId] =
                           Timer.periodic(Duration(seconds: 10), (timer) {
                         AudioCache player =
                             new AudioCache(prefix: 'lib/assets/sounds/');
@@ -108,25 +132,31 @@ class OrderCard extends StatelessWidget {
                   child: Column(
                     children: [
                       Container(
-                        child: ListTile(
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 15),
-                          title: Text(
-                            'ID: ${order.orderId}',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          subtitle: (order.orderStatus == OrderStatus.preparing)
-                              ? Text('Remaining time:',
-                                  style: TextStyle(color: Colors.white))
-                              : getCardSubtitle(order.deliveryDetails),
-                          tileColor: Colors.transparent,
-                          trailing: (order.orderStatus == OrderStatus.preparing)
-                              ? CountdownTimer(
-                                  seconds: remainingSeconds,
-                                  totalSeconds: totalSeconds,
-                                  size: 60,
-                                )
-                              : null,
+                        //height: 100,
+                        padding: EdgeInsets.all(10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'ID: ${order.orderId}',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                (order.orderStatus == OrderStatus.preparing)
+                                    ? Text('Remaining time:',
+                                        style: TextStyle(color: Colors.white))
+                                    : getCardSubtitle(order.deliveryDetails),
+                              ],
+                            ),
+                            (order.orderStatus == OrderStatus.preparing)
+                                ? Countdown(
+                                    secondsRemaining: remainingSeconds,
+                                    totalSecond: totalSeconds,
+                                  )
+                                : Container(),
+                          ],
                         ),
                         decoration: BoxDecoration(
                             color: kSecondaryColor,

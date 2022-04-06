@@ -71,7 +71,8 @@ class HistoryDetailScreen extends StatelessWidget {
                                         Text(
                                             '${product.quantity} x ${product.name}',
                                             style: AppTextStyle.getLatoBold()),
-                                        Text('₹360',
+                                        Text(
+                                            '₹${product.price * product.quantity}',
                                             style:
                                                 AppTextStyle.getLatoSemibold())
                                       ],
@@ -92,7 +93,8 @@ class HistoryDetailScreen extends StatelessWidget {
                                                   AppTextStyle.getLatoSemibold()
                                                       .copyWith(
                                                           color: textGrey)),
-                                          Text('₹${total.value}',
+                                          Text(
+                                              '₹${total.value.toStringAsFixed(2)}',
                                               style:
                                                   AppTextStyle.getLatoSemibold()
                                                       .copyWith(
@@ -122,7 +124,8 @@ class HistoryDetailScreen extends StatelessWidget {
                             children: [
                               Text('Total Bill',
                                   style: AppTextStyle.getLatoSemibold()),
-                              Text('₹${orderItem.totalPrice}',
+                              Text(
+                                  '₹${orderItem.totalPrice + orderItem.totals.firstWhere((element) => element.name == 'shipping', orElse: () => null).value}',
                                   style: AppTextStyle.getLatoSemibold())
                             ],
                           ),
@@ -191,7 +194,6 @@ class OrderTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Timeline.tileBuilder(
       theme: TimelineThemeData(
         nodePosition: 0,

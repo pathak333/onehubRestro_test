@@ -37,7 +37,6 @@ class LoginController extends GetxController {
 
   FirebaseMessaging firebaseMessaging;
 
-
   updatePhoneNumber(var number) {
     phoneNumber.value = number;
   }
@@ -145,6 +144,7 @@ class LoginController extends GetxController {
           userController.updateOutlet(result);
           SecureStoreMixin storeMixin = new SecureStoreMixin();
           storeMixin.setSecureStore('token', result.token);
+          storeMixin.setSecureStore('rId', result.restaurantId.toString());
           userController.updateToken(result.token);
           await registerToken();
           return true;
@@ -252,13 +252,13 @@ class LoginController extends GetxController {
     DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
     TokenRequest tokenRequest;
     if (Platform.isAndroid) {
-      tokenRequest = await _readAndroidBuildData(await deviceInfoPlugin.androidInfo);
+      tokenRequest =
+          await _readAndroidBuildData(await deviceInfoPlugin.androidInfo);
     } else if (Platform.isIOS) {
       tokenRequest = await _readIosDeviceInfo(await deviceInfoPlugin.iosInfo);
     }
     tokenRequest.token = value;
     return await loginRepository.registerDevice(tokenRequest);
-        
   }
 
   Future<bool> unregisterToken() async {
@@ -272,33 +272,30 @@ class LoginController extends GetxController {
       tokenRequest = TokenRequest(uuid: deviceInfo.identifierForVendor);
     }
     return await loginRepository.deregisterDevice(tokenRequest);
-        
   }
 
-  Future<TokenRequest> _readAndroidBuildData(AndroidDeviceInfo deviceInfo) async {
+  Future<TokenRequest> _readAndroidBuildData(
+      AndroidDeviceInfo deviceInfo) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     return TokenRequest(
-          platform: 'android',
-          deviceModel: deviceInfo.model,
-          uuid: deviceInfo.androidId,
-          manufacturer: deviceInfo.manufacturer,
-          version: deviceInfo.version.release,
-          app: packageInfo.packageName,
-          appVersion: packageInfo.version
-        );
+        platform: 'android',
+        deviceModel: deviceInfo.model,
+        uuid: deviceInfo.androidId,
+        manufacturer: deviceInfo.manufacturer,
+        version: deviceInfo.version.release,
+        app: packageInfo.packageName,
+        appVersion: packageInfo.version);
   }
 
   Future<TokenRequest> _readIosDeviceInfo(IosDeviceInfo deviceInfo) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     return TokenRequest(
-          platform: 'iOS',
-          deviceModel: deviceInfo.model,
-          uuid: deviceInfo.identifierForVendor,
-          manufacturer: 'Apple',
-          version: deviceInfo.systemVersion,
-          app: packageInfo.packageName,
-          appVersion: packageInfo.version
-        );
-
+        platform: 'iOS',
+        deviceModel: deviceInfo.model,
+        uuid: deviceInfo.identifierForVendor,
+        manufacturer: 'Apple',
+        version: deviceInfo.systemVersion,
+        app: packageInfo.packageName,
+        appVersion: packageInfo.version);
   }
 }

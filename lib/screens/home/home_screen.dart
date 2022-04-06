@@ -1,16 +1,23 @@
+import 'dart:developer';
+
+import 'package:audioplayers/audioplayers.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:get/state_manager.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:onehubrestro/controllers/initialize_controllers.dart';
 import 'package:onehubrestro/controllers/navigation/navigation-controller.dart';
 import 'package:onehubrestro/controllers/order-home/home_controller.dart';
 import 'package:onehubrestro/controllers/restautant/restaurant_controller.dart';
 import 'package:onehubrestro/controllers/orders/orders_realtime_controller.dart';
 import 'package:onehubrestro/main.dart';
+import 'package:onehubrestro/models/notifications_list.dart';
 import 'package:onehubrestro/models/orders.dart';
 import 'package:onehubrestro/screens/home/components/home_tabbar.dart';
 import 'package:onehubrestro/screens/home/components/order_card.dart';
@@ -31,6 +38,99 @@ import 'package:onehubrestro/controllers/orders/orders_controller.dart';
 import 'package:onehubrestro/utilities/secure_storage.dart';
 import 'package:onehubrestro/utilities/transitions/slidetransition.dart';
 
+// firebase start
+final _dbReference =
+    FirebaseDatabase(databaseURL: 'https://km-production.firebaseio.com')
+        .reference();
+
+DatabaseReference _getOrders() {
+  // int restaurantId = _restaurantController.restaurant.value.restaurantId;
+  DateFormat formatter = DateFormat('ddMMMyyyy');
+
+  return _dbReference.child('orders').child(formatter.format(DateTime.now()));
+  // .child('30Nov2021');
+}
+
+Stream<List<Order>> getNewOrders({int restaurantId}) {
+  var orders =
+      _getOrders().orderByChild("restaurant_id").equalTo(restaurantId).onValue;
+
+  final streamToPublish = orders.map((event) {
+    if (event.snapshot.value != null) {
+      final orderMap = Map<String, dynamic>.from(event.snapshot.value);
+      final ordersList = orderMap.values.map((element) {
+        return Order.fromJson(Map<String, dynamic>.from(element));
+      }).toList();
+      ordersList
+          .retainWhere((order) => order.orderStatus == OrderStatus.created);
+      ordersList.removeWhere((element) => element == null);
+      return ordersList;
+    } else {
+      return <Order>[];
+    }
+  });
+
+  return streamToPublish;
+}
+
+//final UserController userController = Get.put(UserController());
+List ison = [];
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  addNotificationToList(message);
+  SecureStoreMixin storeMixin = new SecureStoreMixin();
+  AudioPlayer advancedPlayer = AudioPlayer();
+  AudioCache player = new AudioCache(
+      fixedPlayer: advancedPlayer,
+      respectSilence: true,
+      prefix: 'lib/assets/sounds/');
+  const alarmAudioPath = "orderalert.mpeg";
+
+  storeMixin.getSecureStore("rId", (rId) {
+    getNewOrders(restaurantId: int.parse(rId)).listen((event) async {
+      print(
+          '${advancedPlayer.state.toString()}================================================}');
+      if (event.length > 0) {
+        // if (ison.length == 0) {
+        log(advancedPlayer.state.toString());
+        if (advancedPlayer.state == PlayerState.STOPPED && ison.length == 0) {
+          print(
+              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+          advancedPlayer = await player.loop(
+            alarmAudioPath,
+            isNotification: true,
+          );
+          ison.add(ison.length + 1);
+        }
+      } else {
+        ison = [];
+        // advancedPlayer.stop();
+        log(advancedPlayer.state.toString());
+        player.clearAll();
+        advancedPlayer.dispose();
+      }
+    });
+  });
+}
+
+Future selectNotification(String payload) async {
+  Get.toNamed("/home");
+}
+
+void addNotificationToList(RemoteMessage message) {
+  SecureStoreMixin storeMixin = SecureStoreMixin();
+  storeMixin.getSecureStore("rId", (rId) {
+    storeMixin.getSecureStore("n-${rId}", (data) {
+      List<RemoteMessage> notifications = remoteMessageListFromJson(data);
+      notifications.add(message);
+      storeMixin.setSecureStore(
+          "n-${rId}", remoteMessageListToJson(notifications));
+    });
+  });
+}
+
+// firebase end
 class HomeScreen extends StatelessWidget {
   bool isSwitched = false;
 
@@ -42,6 +142,7 @@ class HomeScreen extends StatelessWidget {
   SecureStoreMixin secureStoreMixin;
 
   HomeScreen() {
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     secureStoreMixin = Get.find<SecureStoreMixin>();
     try {
       homeController = Get.find<HomeController>();

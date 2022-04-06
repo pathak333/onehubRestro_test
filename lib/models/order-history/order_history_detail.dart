@@ -8,24 +8,27 @@ import 'package:onehubrestro/models/api_response.dart';
 import 'package:onehubrestro/models/error.dart';
 import 'package:onehubrestro/models/orders.dart';
 
-OrderHistoryDetailResponse orderHistoryDetailFromJson(String str) => OrderHistoryDetailResponse.fromJson(json.decode(str));
+OrderHistoryDetailResponse orderHistoryDetailFromJson(String str) =>
+    OrderHistoryDetailResponse.fromJson(json.decode(str));
 
-String orderHistoryDetailToJson(OrderHistoryDetailResponse data) => json.encode(data.toJson());
+String orderHistoryDetailToJson(OrderHistoryDetailResponse data) =>
+    json.encode(data.toJson());
 
 class OrderHistoryDetailResponse extends APIResponse {
-    OrderHistoryDetailResponse({
-        this.status,
-        this.message,
-        this.error,
-        this.data,
-    }): super(status: status, message: message, error: error);
+  OrderHistoryDetailResponse({
+    this.status,
+    this.message,
+    this.error,
+    this.data,
+  }) : super(status: status, message: message, error: error);
 
-    String status;
-    String message;
-    String error;
-    APIData data;
+  String status;
+  String message;
+  String error;
+  APIData data;
 
-    factory OrderHistoryDetailResponse.fromJson(Map<String, dynamic> json) => OrderHistoryDetailResponse(
+  factory OrderHistoryDetailResponse.fromJson(Map<String, dynamic> json) =>
+      OrderHistoryDetailResponse(
         status: json["status"],
         message: json["message"],
         error: json["error"],
@@ -35,81 +38,85 @@ class OrderHistoryDetailResponse extends APIResponse {
                 ? OrderHistoryData.fromJson(json["data"])
                 : ErrorData.fromJson(json["data"]))
             : null,
-    );
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "status": status,
         "message": message,
         "error": error,
         "data": data.toJson(),
-    };
+      };
 }
 
-class OrderHistoryData extends APIData{
-    OrderHistoryData({
-        this.result,
-    });
+class OrderHistoryData extends APIData {
+  OrderHistoryData({
+    this.result,
+  });
 
-    OrderHistoryResult result;
+  OrderHistoryResult result;
 
-    factory OrderHistoryData.fromJson(Map<String, dynamic> json) => OrderHistoryData(
+  factory OrderHistoryData.fromJson(Map<String, dynamic> json) =>
+      OrderHistoryData(
         result: OrderHistoryResult.fromJson(json["result"]),
-    );
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "result": result.toJson(),
-    };
+      };
 }
 
 class OrderHistoryResult {
-    OrderHistoryResult({
-        this.order,
-    });
+  OrderHistoryResult({
+    this.order,
+  });
 
-    OrderDetail order;
+  OrderDetail order;
 
-    factory OrderHistoryResult.fromJson(Map<String, dynamic> json) => OrderHistoryResult(
+  factory OrderHistoryResult.fromJson(Map<String, dynamic> json) =>
+      OrderHistoryResult(
         order: OrderDetail.fromJson(json["order"]),
-    );
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "order": order.toJson(),
-    };
+      };
 }
 
 class OrderDetail {
-    OrderDetail({
-        this.date,
-        this.time,
-        this.timelne,
-        this.status,
-        this.products,
-        this.totalPrice,
-        this.customer,
-        this.totals,
-    });
+  OrderDetail({
+    this.date,
+    this.time,
+    this.timelne,
+    this.status,
+    this.products,
+    this.totalPrice,
+    this.customer,
+    this.totals,
+  });
 
-    String date;
-    String time;
-    List<Timelne> timelne;
-    String status;
-    List<Product> products;
-    int totalPrice;
-    String customer;
-    List<Total> totals;
+  String date;
+  String time;
+  List<Timelne> timelne;
+  String status;
+  List<Product> products;
+  int totalPrice;
+  String customer;
+  List<Total> totals;
 
-    factory OrderDetail.fromJson(Map<String, dynamic> json) => OrderDetail(
+  factory OrderDetail.fromJson(Map<String, dynamic> json) => OrderDetail(
         date: json["date"],
         time: json["time"],
-        timelne: List<Timelne>.from(json["timelne"].map((x) => Timelne.fromJson(x))),
+        timelne:
+            List<Timelne>.from(json["timelne"].map((x) => Timelne.fromJson(x))),
         status: json["status"],
-        products: List<Product>.from(json["products"].map((x) => Product.fromJson(x))),
+        products: List<Product>.from(
+            json["products"].map((x) => Product.fromJson(x))),
         totalPrice: json["total_price"],
         customer: json["customer"],
         totals: List<Total>.from(json["totals"].map((x) => Total.fromJson(x))),
-    );
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "date": date,
         "time": time,
         "timelne": List<dynamic>.from(timelne.map((x) => x.toJson())),
@@ -118,45 +125,45 @@ class OrderDetail {
         "total_price": totalPrice,
         "customer": customer,
         "totals": List<dynamic>.from(totals.map((x) => x.toJson())),
-    };
+      };
 }
 
 class Timelne {
-    Timelne({
-        this.event,
-        this.time,
-    });
+  Timelne({
+    this.event,
+    this.time,
+  });
 
-    String event;
-    String time;
+  String event;
+  String time;
 
-    factory Timelne.fromJson(Map<String, dynamic> json) => Timelne(
+  factory Timelne.fromJson(Map<String, dynamic> json) => Timelne(
         event: json["event"],
         time: json["time"],
-    );
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "event": event,
         "time": time,
-    };
+      };
 }
 
 class Total {
-    Total({
-        this.name,
-        this.value,
-    });
+  Total({
+    this.name,
+    this.value,
+  });
 
-    String name;
-    int value;
+  String name;
+  num value;
 
-    factory Total.fromJson(Map<String, dynamic> json) => Total(
+  factory Total.fromJson(Map<String, dynamic> json) => Total(
         name: json["name"],
         value: json["value"],
-    );
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "name": name,
         "value": value,
-    };
+      };
 }

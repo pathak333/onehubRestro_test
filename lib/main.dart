@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:isolate';
+import 'dart:ui';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -33,6 +35,24 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:sizer/sizer.dart';
 import 'package:http/http.dart' as http;
 
+final ReceivePort backgroundMessageport = ReceivePort();
+const String backgroundMessageIsolateName = 'fcm_background_msg_isolate';
+
+Future<dynamic> backgroundMessageHandler(Map<String, dynamic> message) async {
+  if (message.containsKey('data')) {
+    final port =
+        IsolateNameServer.lookupPortByName(backgroundMessageIsolateName);
+    port.send(message);
+  }
+}
+
+void backgroundMessagePortHandler(message) {
+  final dynamic data = message['data'];
+  print("________________________$message");
+  print("________________________$data");
+  // Here I can access and update my top-level variables.
+}
+
 // const AndroidNotificationChannel channel = AndroidNotificationChannel(
 //     'order_alert_channel', // id
 //     'Order alerts channel', // title
@@ -44,101 +64,101 @@ import 'package:http/http.dart' as http;
 // final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 //     FlutterLocalNotificationsPlugin();
 
-final _dbReference =
-    FirebaseDatabase(databaseURL: 'https://km-production.firebaseio.com')
-        .reference();
+// final _dbReference =
+//     FirebaseDatabase(databaseURL: 'https://km-production.firebaseio.com')
+//         .reference();
 
-DatabaseReference _getOrders() {
-  // int restaurantId = _restaurantController.restaurant.value.restaurantId;
-  DateFormat formatter = DateFormat('ddMMMyyyy');
+// DatabaseReference _getOrders() {
+//   // int restaurantId = _restaurantController.restaurant.value.restaurantId;
+//   DateFormat formatter = DateFormat('ddMMMyyyy');
 
-  return _dbReference.child('orders').child(formatter.format(DateTime.now()));
-  // .child('30Nov2021');
-}
+//   return _dbReference.child('orders').child(formatter.format(DateTime.now()));
+//   // .child('30Nov2021');
+// }
 
-Stream<List<Order>> getNewOrders({int restaurantId}) {
-  var orders =
-      _getOrders().orderByChild("restaurant_id").equalTo(restaurantId).onValue;
+// Stream<List<Order>> getNewOrders({int restaurantId}) {
+//   var orders =
+//       _getOrders().orderByChild("restaurant_id").equalTo(restaurantId).onValue;
 
-  final streamToPublish = orders.map((event) {
-    if (event.snapshot.value != null) {
-      final orderMap = Map<String, dynamic>.from(event.snapshot.value);
-      final ordersList = orderMap.values.map((element) {
-        return Order.fromJson(Map<String, dynamic>.from(element));
-      }).toList();
-      ordersList
-          .retainWhere((order) => order.orderStatus == OrderStatus.created);
-      ordersList.removeWhere((element) => element == null);
-      return ordersList;
-    } else {
-      return <Order>[];
-    }
-  });
+//   final streamToPublish = orders.map((event) {
+//     if (event.snapshot.value != null) {
+//       final orderMap = Map<String, dynamic>.from(event.snapshot.value);
+//       final ordersList = orderMap.values.map((element) {
+//         return Order.fromJson(Map<String, dynamic>.from(element));
+//       }).toList();
+//       ordersList
+//           .retainWhere((order) => order.orderStatus == OrderStatus.created);
+//       ordersList.removeWhere((element) => element == null);
+//       return ordersList;
+//     } else {
+//       return <Order>[];
+//     }
+//   });
 
-  return streamToPublish;
-}
+//   return streamToPublish;
+// }
 
-//final UserController userController = Get.put(UserController());
-List ison = [];
+// //final UserController userController = Get.put(UserController());
+// List ison = [];
 
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  addNotificationToList(message);
-  SecureStoreMixin storeMixin = new SecureStoreMixin();
-  AudioPlayer advancedPlayer = AudioPlayer();
-  AudioCache player = new AudioCache(
-      fixedPlayer: advancedPlayer,
-      respectSilence: true,
-      prefix: 'lib/assets/sounds/');
-  const alarmAudioPath = "orderalert.mpeg";
+// Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+//   await Firebase.initializeApp();
+//   addNotificationToList(message);
+//   SecureStoreMixin storeMixin = new SecureStoreMixin();
+//   AudioPlayer advancedPlayer = AudioPlayer();
+//   AudioCache player = new AudioCache(
+//       fixedPlayer: advancedPlayer,
+//       respectSilence: true,
+//       prefix: 'lib/assets/sounds/');
+//   const alarmAudioPath = "orderalert.mpeg";
 
-  storeMixin.getSecureStore("rId", (rId) {
-    getNewOrders(restaurantId: int.parse(rId)).listen((event) async {
-      print(
-          '${advancedPlayer.state.toString()}================================================}');
-      if (event.length > 0) {
-        // if (ison.length == 0) {
-        log(advancedPlayer.state.toString());
-        if (advancedPlayer.state == PlayerState.STOPPED && ison.length == 0) {
-          print(
-              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-          advancedPlayer = await player.loop(
-            alarmAudioPath,
-            isNotification: true,
-          );
-          ison.add(ison.length + 1);
-        }
-      } else {
-        ison = [];
-        // advancedPlayer.stop();
-        log(advancedPlayer.state.toString());
-        player.clearAll();
-        advancedPlayer.dispose();
-      }
-    });
-  });
-}
+//   storeMixin.getSecureStore("rId", (rId) {
+//     getNewOrders(restaurantId: int.parse(rId)).listen((event) async {
+//       print(
+//           '${advancedPlayer.state.toString()}================================================}');
+//       if (event.length > 0) {
+//         // if (ison.length == 0) {
+//         log(advancedPlayer.state.toString());
+//         if (advancedPlayer.state == PlayerState.STOPPED && ison.length == 0) {
+//           print(
+//               "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+//           advancedPlayer = await player.loop(
+//             alarmAudioPath,
+//             isNotification: true,
+//           );
+//           ison.add(ison.length + 1);
+//         }
+//       } else {
+//         ison = [];
+//         // advancedPlayer.stop();
+//         log(advancedPlayer.state.toString());
+//         player.clearAll();
+//         advancedPlayer.dispose();
+//       }
+//     });
+//   });
+// }
 
-Future selectNotification(String payload) async {
-  Get.toNamed("/home");
-}
+// Future selectNotification(String payload) async {
+//   Get.toNamed("/home");
+// }
 
-void addNotificationToList(RemoteMessage message) {
-  SecureStoreMixin storeMixin = SecureStoreMixin();
-  storeMixin.getSecureStore("rId", (rId) {
-    storeMixin.getSecureStore("n-${rId}", (data) {
-      List<RemoteMessage> notifications = remoteMessageListFromJson(data);
-      notifications.add(message);
-      storeMixin.setSecureStore(
-          "n-${rId}", remoteMessageListToJson(notifications));
-    });
-  });
-}
+// void addNotificationToList(RemoteMessage message) {
+//   SecureStoreMixin storeMixin = SecureStoreMixin();
+//   storeMixin.getSecureStore("rId", (rId) {
+//     storeMixin.getSecureStore("n-${rId}", (data) {
+//       List<RemoteMessage> notifications = remoteMessageListFromJson(data);
+//       notifications.add(message);
+//       storeMixin.setSecureStore(
+//           "n-${rId}", remoteMessageListToJson(notifications));
+//     });
+//   });
+// }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  //FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // MethodChannel _channel =
   //     MethodChannel('com.bulbandkey.onehubrestro/order_alerts_channel');
@@ -154,6 +174,13 @@ void main() async {
   ConnectionStatusSingleton connectionStatus =
       ConnectionStatusSingleton.getInstance();
   connectionStatus.initialize();
+// isolate code for notification
+  IsolateNameServer.registerPortWithName(
+    backgroundMessageport.sendPort,
+    backgroundMessageIsolateName,
+  );
+
+  backgroundMessageport.listen(backgroundMessagePortHandler);
 
   runApp(OneHubRestro());
 }

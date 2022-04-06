@@ -31,6 +31,9 @@ class Order {
     this.products,
     this.time,
     this.total,
+    this.subTotal,
+    this.tax,
+    this.shippingAmount,
     this.isBuzzerOn,
   });
 
@@ -47,6 +50,9 @@ class Order {
   List<Product> products;
   String time;
   int total;
+  num subTotal;
+  num shippingAmount;
+  num tax;
   bool isBuzzerOn;
   factory Order.fromJson(Map<String, dynamic> json) => Order(
       customer: json["customer"],
@@ -66,6 +72,9 @@ class Order {
           .map((x) => Product.fromJson(Map<String, dynamic>.from(x)))),
       time: json["time"],
       total: json["total"],
+      subTotal: json["sub_total"],
+      shippingAmount: json["shipping_amount"],
+      tax: json["tax"],
       isBuzzerOn: json["is_buzzer_on"]);
 
   static mapStatusToOrderStatus(String status) {
@@ -102,6 +111,7 @@ class Order {
         "products": List<dynamic>.from(products.map((x) => x.toJson())),
         "time": time,
         "total": total,
+        "tax": tax,
         "is_buzzer_on": isBuzzerOn
       };
 }

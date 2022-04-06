@@ -6,8 +6,8 @@ import 'package:onehubrestro/utilities/colors.dart';
 import 'package:onehubrestro/utilities/test_styles.dart';
 
 class OrderHistoryHeader extends StatefulWidget {
-  OrderHistoryHeader({this.onDateSelected});
-
+  OrderHistoryHeader({this.sDate, this.eDate, this.onDateSelected});
+  DateTime sDate, eDate;
   Function(DateTime, DateTime) onDateSelected;
 
   @override
@@ -50,7 +50,8 @@ class _OrderHistoryHeaderState extends State<OrderHistoryHeader> {
                                 builder: (context, Widget child) => Theme(
                                       data: ThemeData(
                                           appBarTheme: AppBarTheme(
-                                              backgroundColor: kSecondaryColor)),
+                                              backgroundColor:
+                                                  kSecondaryColor)),
                                       child: child,
                                     ),
                                 firstDate: DateTime.now()
@@ -68,21 +69,49 @@ class _OrderHistoryHeaderState extends State<OrderHistoryHeader> {
                           });
                       }),
                 )
-              : Container(
-                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                  decoration: BoxDecoration(
-                      border: Border.all(color: kSecondaryColor),
-                      borderRadius: BorderRadius.circular(30)),
-                  child: Row(
-                    children: [
-                      Text(
-                        '${formatter.format(orderController.pastOrdersStartDate.value)} - ${formatter.format(orderController.pastOrdersEndDate.value)} ',
-                        style: AppTextStyle.getPoppinsSemibold()
-                            .copyWith(fontSize: 14, color: kSecondaryColor),
-                      ),
-                      SizedBox(width: 10),
-                      Icon(Icons.expand_more, color: kSecondaryColor)
-                    ],
+              : GestureDetector(
+                  onTap: () async {
+                    final DateTimeRange pickedDateRange1 =
+                        await showDateRangePicker(
+                            initialDateRange: DateTimeRange(
+                                start: widget.sDate, end: widget.eDate),
+                            context: context,
+                            builder: (context, Widget child) => Theme(
+                                  data: ThemeData(
+                                      appBarTheme: AppBarTheme(
+                                          backgroundColor: kSecondaryColor)),
+                                  child: child,
+                                ),
+                            firstDate:
+                                DateTime.now().subtract(Duration(days: 365)),
+                            lastDate: DateTime.now());
+                    if (pickedDateRange1 != null)
+                      setState(() {
+                        startDate = pickedDateRange1.start;
+                        orderController.pastOrdersStartDate = startDate.obs;
+
+                        endDate = pickedDateRange1.end;
+                        orderController.pastOrdersEndDate = endDate.obs;
+
+                        widget.onDateSelected(startDate, endDate);
+                      });
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: kSecondaryColor),
+                        borderRadius: BorderRadius.circular(30)),
+                    child: Row(
+                      children: [
+                        Text(
+                          '${formatter.format(orderController.pastOrdersStartDate.value)} - ${formatter.format(orderController.pastOrdersEndDate.value)} ',
+                          style: AppTextStyle.getPoppinsSemibold()
+                              .copyWith(fontSize: 14, color: kSecondaryColor),
+                        ),
+                        SizedBox(width: 10),
+                        Icon(Icons.expand_more, color: kSecondaryColor)
+                      ],
+                    ),
                   ),
                 ),
           SizedBox(width: 10),

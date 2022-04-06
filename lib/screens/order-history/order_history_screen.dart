@@ -49,13 +49,19 @@ class OrderHistoryScreen extends StatelessWidget {
                     child: ListView(
                       children: [
                         OrderHistoryHeader(
+                          sDate: startDate,
+                          eDate: endDate,
                           onDateSelected: (stDate, edDate) {
                             startDate = stDate;
                             endDate = edDate;
-                            orderController.getPastOrders(OrderListParameters(
-                                page: 1,
-                                startDate: formatter.format(stDate),
-                                endDate: formatter.format(edDate)));
+                            orderController.getPastOrders(
+                                stDate != null && edDate != null
+                                    ? OrderListParameters(
+                                        page: 1,
+                                        startDate: formatter.format(stDate),
+                                        endDate: formatter.format(edDate))
+                                    : OrderListParameters(page: 1));
+                            page = 1;
                           },
                         ),
                         SizedBox(
